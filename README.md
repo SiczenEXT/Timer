@@ -1,19 +1,20 @@
-# Counter Timer for OBS Studio
+# Counter Timer — OBS Studio plugin
 
-Native OBS source plugin for an adjustable count-up stopwatch and countdown, styled after the supplied clock reference. The Windows CI workflow builds a 64-bit DLL and bundles the plugin data folder into a ZIP artifact.
-
-## Download the Windows build
-
-After the first successful GitHub Actions run, open **Actions → Build Windows DLL → Artifacts** and download `counter-timer-windows-x64`. Extract the ZIP and follow `INSTALL.txt`.
-
-## Build locally
-
-This is an OBS plugin project. It requires the OBS libobs development SDK and FreeType. See the CMake project and the workflow for the Windows build configuration.
+Windows x64 OBS source plugin inspired by the provided clock layout: large bold time, a smaller editable title, tight spacing, and an offset shadow.
 
 ## Features
+- Count-up stopwatch and countdown with configurable initial hours/minutes/seconds.
+- Start/Pause and Reset buttons in source properties; countdown can stop at zero.
+- Time formats: HH:MM:SS, total MM:SS, or HH:MM:SS.hh.
+- Editable title and visibility, title above/below/automatic placement, and left/center/right alignment.
+- Adjustable font family, timer/title sizes, letter spacing, and line gap.
+- Editable timer/title/shadow/outline colors, shadow offsets, and optional outline.
 
-- Count-up and countdown modes with configurable initial hours, minutes and seconds.
-- Start/pause and reset controls in the OBS source properties.
-- Editable title, above/below/automatic placement, time format, font, sizing, tracking and line gap.
-- Configurable colors, shadow and outline.
+## Build and install
+The Build Windows DLL workflow uses the official OBS plugin template's Windows dependency bootstrap, builds a 64-bit DLL, and publishes a ZIP artifact. Open GitHub Actions, select the latest successful Build Windows DLL run, and download counter-timer-windows-x64.
 
+Extract the included counter-timer folder to %APPDATA%\obs-studio\plugins\ (create plugins if needed), or %PROGRAMDATA%\obs-studio\plugins\ for all users, then restart OBS.
+
+Packaged layout:
+- counter-timer/bin/64bit/counter-timer.dll
+- counter-timer/data/locale/en-US.ini
