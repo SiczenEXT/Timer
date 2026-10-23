@@ -155,13 +155,15 @@ static void draw_path(Graphics &graphics, const GraphicsPath &source, const Rect
 {
     if (source.GetPointCount() == 0)
         return;
-    GraphicsPath path(source);
+    GraphicsPath path;
+    path.AddPath(&source, FALSE);
     Matrix matrix;
     matrix.Translate(x - bounds.X, y - bounds.Y);
     path.Transform(&matrix);
 
     if (d->shadow_enabled) {
-        GraphicsPath shadow(path);
+        GraphicsPath shadow;
+        shadow.AddPath(&path, FALSE);
         Matrix shadow_matrix;
         shadow_matrix.Translate(static_cast<REAL>(d->shadow_x), static_cast<REAL>(d->shadow_y));
         shadow.Transform(&shadow_matrix);
