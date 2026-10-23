@@ -1,0 +1,78 @@
+name: Build Windows DLL
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Build Counter Timer (Windows x64)
+    runs-on: windows-2022
+    steps:
+      - name: Checkout Counter Timer
+        uses: actions/checkout@v4
+        with:
+          path: timer-source
+
+      - name: Checkout official OBS plugin build template
+        uses: actions/checkout@v4
+        with:
+          repository: obsproject/obs-plugintemplate
+          ref: master
+          path: obs-template
+
+      - name: Prepare plugin build tree
+        shell: pwsh
+        run: |
+          $workspace = $env:GITHUB_WORKSPACE
+          $source = Join-Path $workspace "timer-source"
+          $build = Join-Path $workspace "obs-template"
+
+          Copy-Item (Join-Path $source "CMakeLists.txt") (Join-Path $build "CMakeLists.txt") -Force
+          Copy-Item (Join-Path $source "src/plugin-main.cpp") (Join-Path $build "src/plugin-main.cpp") -Force
+          Copy-Item (Join-Path $source "src/counter_timer.cpp") (Join-Path $build "src/counter_timer.cpp") -Force
+          $localeDir = Join-Path $build "data/locale"
+          New-Item -ItemType Directory -Path $localeDir -Force | Out-Null
+          Copy-Item (Join-Path $source "data/locale/en-US.ini") (Join-Path $localeDir "en-US.ini") -Force
+
+          $specPath = Join-Path $build "buildspec.json"
+          $spec = Get-Content $specPath -Raw | ConvertFrom-Json
+          $spec.name = "counter-timer"
+          $spec.displayName = "Counter Timer"
+          $spec.version = "1.0.0"
+          $spec.author = "SiczenEXT"
+          $spec.website = "https://github.com/SiczenEXT/Timer"
+          $spec.email = "siczenext@gmail.com"
+          Set-Content -Path $specPath -Value ($spec | ConvertTo-Json -Depth 100) -Encoding utf8
+
+      - name: Configure OBS plugin toolchain
+        working-directory: obs-template
+        run: cmake --preset windows-ci-x64
+
+      - name: Compile DLL
+        working-directory: obs-template
+        run: cmake --build --preset windows-ci-x64 --config RelWithDebInfo --parallel
+
+      - name: Install plugin bundle
+        working-directory: obs-template
+        shell: pwsh
+        run: |
+          $prefix = Join-Path $env:GITHUB_WORKSPACE "release"
+          cmake --install build_x64 --prefix $prefix --config RelWithDebInfo
+          if ($LASTEXITCODE -ne 0) { throw "cmake install failed" }
+          $dll = Join-Path $prefix "counter-timer/bin/64bit/counter-timer.dll"
+          if (!(Test-Path $dll)) { throw "Build finished but counter-timer.dll was not found at $dll" }
+          Compress-Archive -Path (Join-Path $prefix "counter-timer") -DestinationPath (Join-Path $env:GITHUB_WORKSPACE "counter-timer-windows-x64.zip") -Force
+
+      - name: Upload installable plugin ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: counter-timer-windows-x64
+          path: counter-timer-windows-x64.zip
+          if-no-files-found: error
+          retention-days: 30
