@@ -1,5 +1,6 @@
 #include <obs-module.h>
 #include <windows.h>
+#include <objidl.h>
 #include <gdiplus.h>
 
 OBS_DECLARE_MODULE()

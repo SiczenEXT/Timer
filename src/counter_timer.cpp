@@ -1,6 +1,7 @@
 #include <obs-module.h>
 #include <graphics/graphics.h>
 #include <windows.h>
+#include <objidl.h>
 #include <gdiplus.h>
 
 #include <algorithm>
